@@ -58,9 +58,9 @@ public class LoginController {
 
     @ApiOperation(value="账号+密码登录",response = Result.class)
     @RequestMapping(value="/pwd/login", method=RequestMethod.POST)
-    public Result login(@RequestBody PassportPwdLoginDTO passportPwdLoginDTO) {
+    public Result<JSONObject> login(@RequestBody PassportPwdLoginDTO passportPwdLoginDTO) {
         log.info("账号+密码登录开始：passportPwdLoginDTO:{}",JSONObject.toJSONString(passportPwdLoginDTO));
-        Result result;
+        Result<JSONObject> result = Result.newResult(ResultEnum.FAIL,"");
         if(StringUtils.isEmpty(passportPwdLoginDTO.getImgVcode())){
             log.warn("图片验证码不能为空:passportPwdLoginDTO:{}", JSONObject.toJSONString(passportPwdLoginDTO));
             result = Result.newResult(ResultEnum.IMGVCODE_LOGIN_PUT,"");
@@ -69,16 +69,18 @@ public class LoginController {
             result = Result.newResult(ResultEnum.FAIL,"账号|密码不能为空");
         }else{
             String imgKey = getPwdKey(passportPwdLoginDTO);
-            result = imgCodeService.verifyImgCode(imgKey,passportPwdLoginDTO.getImgVcode());
-            if(result.isSuccess()) {
+            Result imgCodeCheckResult = imgCodeService.verifyImgCode(imgKey,passportPwdLoginDTO.getImgVcode());
+            if(imgCodeCheckResult.isSuccess()) {
                 log.debug("图片验证码校验成功:clcPassportPwdLoginPDTO:{}", JSONObject.toJSONString(passportPwdLoginDTO));
                 PassportOperationTypeEnum passportOperationTypeEnum = ApiUloginUtil.chackPassportType(passportPwdLoginDTO.getAccount());
-                result = loginService.login(passportOperationTypeEnum,passportPwdLoginDTO.getAccount(),passportPwdLoginDTO.getPwdAes(),ApiUloginUtil.TOKEN_OVERTIME_MS);
-                if(result.isSuccess()){
+                Result<PassportDTO> loginResult = loginService.login(passportOperationTypeEnum,passportPwdLoginDTO.getAccount(),passportPwdLoginDTO.getPwdAes(),ApiUloginUtil.TOKEN_OVERTIME_MS);
+                if(loginResult.isSuccess()){
                     JSONObject joData = new JSONObject();
-                    joData.put("token",((PassportDTO)result.getData()).getToken());
-                    result.setData(joData);
+                    joData.put("token",loginResult.getData().getToken());
+                    result = Result.newSuccess(joData);
                 }else{
+                    result.setCode(loginResult.getCode());
+                    result.setMessage(loginResult.getMessage());
                     result.setData(null);
                 }
             }
