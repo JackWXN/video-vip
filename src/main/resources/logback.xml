@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration scan="true" scanPeriod="10 seconds">
+    <property resource="service.properties" />
+    <include resource="org/springframework/boot/logging/logback/base.xml" />
+    <!--<include resource="org/springframework/boot/logging/logback/defaults.xml" />-->
+
+    <appender name="LOG_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <File>${log.dir}/info.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log.dir}/%d{yyyy-MM-dd}/info-%d{yyyyMMdd}.log</fileNamePattern>
+            <!--<timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">-->
+                <!--<maxFileSize>${log.every.file.size}</maxFileSize>-->
+            <!--</timeBasedFileNamingAndTriggeringPolicy>-->
+            <maxHistory>${log.keep.time}</maxHistory>
+        </rollingPolicy>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level \(%logger:%-3L\) [%X{vip-header-rid}] - %msg%n</Pattern>
+        </layout>
+    </appender>
+
+    <appender name="WARN_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>WARN</level>
+        </filter>
+        <File>${log.dir}/warn.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log.dir}/%d{yyyy-MM-dd}/warn-%d{yyyyMMdd}.log</fileNamePattern>
+            <!--<timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">-->
+                <!--<maxFileSize>${log.every.file.size}</maxFileSize>-->
+            <!--</timeBasedFileNamingAndTriggeringPolicy>-->
+            <maxHistory>${log.keep.time}</maxHistory>
+        </rollingPolicy>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level \(%logger:%-3L\) [%X{vip-header-rid}] - %msg%n</Pattern>
+        </layout>
+    </appender>
+
+    <appender name="ERROR_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>ERROR</level>
+        </filter>
+        <File>${log.dir}/error.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log.dir}/%d{yyyy-MM-dd}/error-%d{yyyyMMdd}.log
+            </fileNamePattern>
+            <!--<timeBasedFileNamingAndTriggeringPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">-->
+                <!--<maxFileSize>${log.every.file.size}</maxFileSize>-->
+            <!--</timeBasedFileNamingAndTriggeringPolicy>-->
+            <maxHistory>${log.keep.time}</maxHistory>
+        </rollingPolicy>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level \(%logger:%-3L\) [%X{vip-header-rid}] - %msg%n</Pattern>
+        </layout>
+    </appender>
+
+    <appender name="SQL_MONITOR" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>info</level>
+        </filter>
+        <File>${log.dir}/sql/sql.monitor.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log.dir}/sql/%d{yyyy-MM-dd}/sql.monitor-%d{yyyyMMdd}.log
+            </fileNamePattern>
+            <maxHistory>1</maxHistory>
+        </rollingPolicy>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>%m%n</Pattern>
+        </layout>
+    </appender>
+
+    <appender name="HTTP_LOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>info</level>
+        </filter>
+        <File>${log.dir}/http.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log.dir}/%d{yyyy-MM-dd}/http-%d{yyyyMMdd}.log
+            </fileNamePattern>
+            <maxHistory>2</maxHistory>
+        </rollingPolicy>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>%msg%n</Pattern>
+        </layout>
+    </appender>
+
+    <appender name="DUBBO_LOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>info</level>
+        </filter>
+        <File>${log.dir}/dubbo.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log.dir}/%d{yyyy-MM-dd}/dubbo-%d{yyyyMMdd}.log
+            </fileNamePattern>
+            <maxHistory>${log.keep.time}</maxHistory>
+        </rollingPolicy>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>%msg%n</Pattern>
+        </layout>
+    </appender>
+
+    <appender name="KAFKA_LOG" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+            <level>info</level>
+        </filter>
+        <File>${log.dir}/kafka.log</File>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${log.dir}/%d{yyyy-MM-dd}/kafka-%d{yyyyMMdd}.log
+            </fileNamePattern>
+            <maxHistory>${log.keep.time}</maxHistory>
+        </rollingPolicy>
+        <layout class="ch.qos.logback.classic.PatternLayout">
+            <Pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} %msg%n</Pattern>
+        </layout>
+    </appender>
+
+    <root level="${log.level}">
+        <appender-ref ref="LOG_FILE" />
+        <appender-ref ref="WARN_FILE" />
+        <appender-ref ref="ERROR_FILE" />
+    </root>
+    <logger name="sql.monitor" level="info" additivity="false">
+        <appender-ref ref="SQL_MONITOR" />
+    </logger>
+    <logger name="dubbo.log" level="info" additivity="false">
+        <appender-ref ref="DUBBO_LOG" />
+    </logger>
+    <logger name="http.log" level="info" additivity="false">
+        <appender-ref ref="HTTP_LOG" />
+    </logger>
+    <logger name="kafka.log" level="info" additivity="false">
+        <appender-ref ref="KAFKA_LOG" />
+    </logger>
+
+</configuration>

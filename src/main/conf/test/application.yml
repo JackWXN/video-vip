@@ -1,0 +1,27 @@
+server:
+  port: 8162
+  servlet:
+    context-path: /jyfq-mapi
+  tomcat:
+    max-http-post-size: 10000000
+
+spring:
+  thymeleaf:
+    #是否取消热加载
+    cache: false
+  servlet:
+    multipart:
+      max-file-size: 100MB
+      max-request-size: 100MB
+  redis:
+    host: 123.57.26.191
+    password: j8s4fcxdlU
+    port: 6379
+    pool:
+      max-idle: 200
+      min-idle: 10
+      max-active: 1024
+      max-wait: 1000
+
+
+
