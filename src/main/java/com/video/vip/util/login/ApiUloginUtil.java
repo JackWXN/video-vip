@@ -1,6 +1,6 @@
 package com.video.vip.util.login;
 
-import com.video.vip.util.enums.PassportOperationTypeEnum;
+import com.video.vip.util.enums.passport.PassportOperationTypeEnum;
 import lombok.NonNull;
 
 /**

@@ -1,6 +1,8 @@
-package com.video.vip.entity.dto.passport;
+package com.video.vip.entity.po;
 
-import com.alibaba.fastjson.JSONObject;
+import com.baomidou.mybatisplus.annotation.IdType;
+import com.baomidou.mybatisplus.annotation.TableId;
+import com.baomidou.mybatisplus.annotation.TableName;
 import lombok.Data;
 
 import java.util.Date;
@@ -11,11 +13,14 @@ import java.util.Date;
  * @author 何智琦
  */
 @Data
-public class PassportDTO{
+@TableName(value = "passport")
+public class Passport {
     private static final long serialVersionUID = -7542096466761455392L;
+
     /**
      * 主键自增
      */
+    @TableId(value = "id",type = IdType.AUTO)
     private Long id;
     /**
      * 帐号手机号，用户的手机号
@@ -78,17 +83,4 @@ public class PassportDTO{
      */
     private Integer version;
 
-
-    /**
-     * 用户token，不保存在数据库中，
-     */
-    private String token;
-    /**
-     * 用户的角色信息，不保存在数据库中，
-     */
-    private JSONObject roleJson;
-    /**
-     * 是不是新注册的用户，1是0否
-     */
-    private String registerIs;
 }

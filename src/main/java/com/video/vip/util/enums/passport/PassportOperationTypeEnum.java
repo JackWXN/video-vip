@@ -1,4 +1,4 @@
-package com.video.vip.util.enums;
+package com.video.vip.util.enums.passport;
 
 import lombok.Getter;
 import lombok.Setter;

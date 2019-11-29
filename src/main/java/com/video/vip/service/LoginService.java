@@ -2,7 +2,7 @@ package com.video.vip.service;
 
 import com.video.vip.basics.dto.Result;
 import com.video.vip.entity.dto.passport.PassportDTO;
-import com.video.vip.util.enums.PassportOperationTypeEnum;
+import com.video.vip.util.enums.passport.PassportOperationTypeEnum;
 
 /**
  * 帐号登录相关操作

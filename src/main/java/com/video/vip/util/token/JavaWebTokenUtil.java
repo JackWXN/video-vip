@@ -2,19 +2,20 @@ package com.video.vip.util.token;
 
 import com.alibaba.fastjson.JSONObject;
 import com.video.vip.basics.service.RedisService;
+import com.video.vip.basics.util.basics.DateUtil;
 import com.video.vip.basics.util.basics.MyApplicationContextUtil;
 import com.video.vip.basics.util.basics.StringUtil;
 import com.video.vip.basics.util.pwd.PassportConstantUtil;
 import com.video.vip.basics.util.pwd.PhoneUtil;
-import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.ExpiredJwtException;
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureException;
+import io.jsonwebtoken.*;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 
+import javax.crypto.spec.SecretKeySpec;
 import javax.xml.bind.DatatypeConverter;
+import java.security.Key;
+import java.util.Date;
 import java.util.Iterator;
 
 /**
@@ -125,5 +126,51 @@ public class JavaWebTokenUtil {
         RedisService redisService = (RedisService) MyApplicationContextUtil.getContext().getBean("redisService");
         redisService.remove(TOKEN_REDIS + pid);
         return true;
+    }
+
+    /**
+     * 生成token
+     *
+     * @param pId                用户账号id
+     * @param roles              app角色列表，json格式appId:角色,appId:角色
+     * @param phone              手机号
+     * @param tokenExpiresMs token过期时间（单位:毫秒）
+     * @return 返回token
+     */
+    public static String createJWT(Long pId, String roles, String phone, Long tokenExpiresMs) {
+        //手机号加密
+        if(StringUtils.isEmpty(phone)){
+            phone = PhoneUtil.encryption(phone);
+        }
+        SignatureAlgorithm signatureAlgorithm = SignatureAlgorithm.HS256;
+
+        long nowMillis = System.currentTimeMillis();
+        Date now = new Date(nowMillis);
+        String strNowDate = DateUtil.getDateTime(now, "yyyyMMddHHmmssSSS");
+
+        //生成签名密钥
+        byte[] apiKeySecretBytes = DatatypeConverter.parseBase64Binary(BASE64_SECRETT);
+        Key signingKey = new SecretKeySpec(apiKeySecretBytes, signatureAlgorithm.getJcaName());
+        //添加构成JWT的参数
+        JwtBuilder builder = Jwts.builder().setHeaderParam("typ", "JWT")
+                .claim("p_id", pId)
+                .claim("roles", roles)
+                .claim("phone", phone)
+                .claim("login_date", strNowDate)
+                .signWith(signatureAlgorithm, signingKey);
+        //添加Token过期时间
+        if (tokenExpiresMs >= 0) {
+            long expMillis = nowMillis + tokenExpiresMs;
+            Date exp = new Date(expMillis);
+            builder.setExpiration(exp).setNotBefore(now);
+        }
+        //获取redis操作类
+        RedisService redisService =
+                (RedisService) MyApplicationContextUtil.getContext().getBean("redisService");
+        log.info("添加login_date缓存----token_"+pId.toString()+",strNowDate="+strNowDate);
+        //默认30天过期30*24*60*60L
+        redisService.set(TOKEN_REDIS + pId.toString(), strNowDate, 30 * 24 * 60 * 60L);
+        //生成JWT
+        return builder.compact();
     }
 }

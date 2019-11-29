@@ -9,7 +9,7 @@ import com.video.vip.entity.dto.PassportPwdLoginDTO;
 import com.video.vip.entity.dto.passport.PassportDTO;
 import com.video.vip.service.ImgCodeService;
 import com.video.vip.service.LoginService;
-import com.video.vip.util.enums.PassportOperationTypeEnum;
+import com.video.vip.util.enums.passport.PassportOperationTypeEnum;
 import com.video.vip.util.login.ApiUloginUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;

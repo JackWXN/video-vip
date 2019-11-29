@@ -6,7 +6,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-@MapperScan("com.video.vip.dao")
+@MapperScan("com.video.vip.mapper")
 public class MybatisPlusConfig {
 
     /**
