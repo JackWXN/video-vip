@@ -15,8 +15,7 @@ import springfox.documentation.swagger2.annotations.EnableSwagger2;
  */
 @EnableSwagger2
 @SpringBootApplication(exclude = {
-        DataSourceAutoConfiguration.class
-        , DataSourceTransactionManagerAutoConfiguration.class
+        DataSourceTransactionManagerAutoConfiguration.class
         , HibernateJpaAutoConfiguration.class
 })
 @Slf4j

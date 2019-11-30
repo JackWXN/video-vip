@@ -154,7 +154,7 @@
         <dependency>
             <groupId>javaee</groupId>
             <artifactId>javaee-api</artifactId>
-            <version>7</version>
+            <version>5</version>
             <type>jar</type>
             <scope>provided</scope>
         </dependency>
