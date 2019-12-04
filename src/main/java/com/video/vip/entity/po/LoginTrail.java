@@ -3,6 +3,7 @@ package com.video.vip.entity.po;
 import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
+import com.video.vip.entity.po.base.BaseModel;
 import lombok.Data;
 
 import java.util.Date;
@@ -12,13 +13,7 @@ import java.util.Date;
  */
 @Data
 @TableName(value = "login_trail")
-public class LoginTrail {
-
-    /**
-     * 主键自增
-     */
-    @TableId(value = "id",type = IdType.AUTO)
-    private Long id;
+public class LoginTrail extends BaseModel {
 
     /**
      * pid
@@ -30,18 +25,4 @@ public class LoginTrail {
      */
     private int operationType;
 
-    /**
-     * 创建时间
-     */
-    private Date createDate;
-
-    /**
-     * 最后一次修改日期
-     */
-    private Date updateDate;
-
-    /**
-     * 版本号
-     */
-    private Integer version;
 }

@@ -3,12 +3,15 @@ package com.video.vip.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.video.vip.basics.dto.Result;
+import com.video.vip.basics.util.encryptions.Md5Util;
 import com.video.vip.basics.util.enums.ResultEnum;
-import com.video.vip.dao.LoginDAO;
+import com.video.vip.basics.util.pwd.PassportConstantUtil;
+import com.video.vip.dao.PassportDAO;
 import com.video.vip.dao.LoginTrailDAO;
 import com.video.vip.entity.dto.passport.PassportDTO;
 import com.video.vip.entity.po.LoginTrail;
 import com.video.vip.entity.po.Passport;
+import com.video.vip.locks.redis.LockService;
 import com.video.vip.service.LoginService;
 import com.video.vip.util.enums.passport.LoginTypeEnum;
 import com.video.vip.util.enums.passport.PassportOperationTypeEnum;
@@ -31,7 +34,7 @@ import org.springframework.util.StringUtils;
 @Service("loginService")
 public class LoginServiceImpl implements LoginService {
     @Autowired
-    private LoginDAO loginDAO;
+    private PassportDAO passportDAO;
 
     @Autowired
     private LoginTrailDAO loginTrailDAO;
@@ -66,6 +69,64 @@ public class LoginServiceImpl implements LoginService {
             result = Result.newSuccess();
         }
         log.info("进行登出业务操作结束：返回：{}", result.toJSONString());
+        return result;
+    }
+
+    @Override
+    public Result register(@NonNull PassportOperationTypeEnum passportOperationTypeEnum, @NonNull String account, @NonNull String pwdAes, @NonNull Long tokenExpiresMs){
+        log.info("注册开始：passportOperationTypeEnum:{},account：{}，pwdAes：{},tokenExpiresMs:{}",passportOperationTypeEnum,account,pwdAes,tokenExpiresMs);
+        Result<PassportDTO> result = Result.newSuccess();
+        final String lockKey = "register-pp-RgC9sGRf9Rjfs0FCRHw-" + account.trim();
+        if (LockService.addTimeLock(lockKey, PassportConstantUtil.LOCK_REDIS_REGISTER_SECOND)) {
+            try {
+                String pwdSalt = PasswordUtil.generatePwdSalt();
+                Result<String> passwordCheckResult = PasswordUtil.encryption(pwdAes,pwdSalt,true);
+                if(!passwordCheckResult.isSuccess()){
+                    result = Result.newResult(ResultEnum.FAIL,"密码不符合要求");
+                }else {
+                    Passport passport = new Passport();
+                    passport.setPasswordSalt(pwdSalt);
+                    passport.setPassword(passwordCheckResult.getData());
+
+                    Result<Passport> passportResult = getPassportByAccount(passportOperationTypeEnum,account);
+                    if(!passportResult.isSuccess()){
+                        result = Result.newResult(passportResult.getCode(),passportResult.getMessage());
+                    } else {
+                        if(null==passportResult.getData()){
+                            passport.setAccount(account.trim());
+                            if(passportOperationTypeEnum.equals(PassportOperationTypeEnum.MAIL)){
+                                passport.setMail(account.trim());
+                            }else if(passportOperationTypeEnum.equals(PassportOperationTypeEnum.PHONE)){
+                                passport.setPhone(account.trim());
+                            }else {
+                                log.warn("目前不支持{}+密码类型注册：passportOperationTypeEnum：{}",passportOperationTypeEnum.getMsg(),passportOperationTypeEnum);
+                                result = Result.newResult(ResultEnum.FAIL,"目前不支持"+passportOperationTypeEnum.getMsg()+"+密码类型注册");
+                            }
+                            passport.setStatus(UserStatusEnum.ENABLE.getCode());
+                            int intAdd = passportDAO.savePassport(passport);
+                            if(intAdd==0){
+                                result = Result.newResult(ResultEnum.REGISTER_ERROR,"注册账号失败");
+                                log.error("根据密码注册错误，数据库影响条数为0：intAdd:{},passport:{}",intAdd, JSONObject.toJSONString(passport));
+                            }
+                        } else if (passportResult.getData().getStatus()==UserStatusEnum.DISABLE.getCode()) {
+                            result = Result.newResult(ResultEnum.LOGIN_DISABLE,"账号被禁用,请联系管理员");
+                        } else if (passportResult.getData().getStatus()==UserStatusEnum.HANDING.getCode()) {
+                            result = Result.newResult(ResultEnum.LOGIN_DISABLE,"账号被冻结,请联系管理员");
+                        }else {
+                            result = Result.newResult(ResultEnum.FAIL,"账号已存在");
+                        }
+                    }
+                }
+            }catch (Exception e){
+                log.error("注册异常。",e);
+                result = Result.newResult(ResultEnum.FAIL,ResultEnum.FAIL.getMsg());
+            }finally {
+                LockService.delTimeLock(lockKey);
+            }
+        } else {
+            result = Result.newResult(ResultEnum.FAIL,"请不要频繁操作");
+        }
+        log.info("注册结束：返回：{}", result.toJSONString());
         return result;
     }
 
@@ -127,14 +188,14 @@ public class LoginServiceImpl implements LoginService {
         Result<Passport> result = Result.newSuccess();
         Passport passportInfo = null;
         if(passportOperationTypeEnum.equals(PassportOperationTypeEnum.PHONE)){
-            passportInfo = loginDAO.getPassportByPhone(account.trim());
+            passportInfo = passportDAO.getPassportByPhone(account.trim());
         }else if(passportOperationTypeEnum.equals(PassportOperationTypeEnum.MAIL)){
-            passportInfo = loginDAO.getPassportByMail(account.trim());
+            passportInfo = passportDAO.getPassportByMail(account.trim());
         }else if(passportOperationTypeEnum.equals(PassportOperationTypeEnum.PID)){
-            passportInfo = loginDAO.getPassportById(Long.parseLong(account));
+            passportInfo = passportDAO.getPassportById(Long.parseLong(account));
         }else{
             log.warn("目前不支持{}类型：passportOperationTypeEnum：{}",passportOperationTypeEnum.getMsg(),passportOperationTypeEnum);
-            result = Result.newResult(ResultEnum.FAIL,"类型错误");
+            result = Result.newResult(ResultEnum.FAIL,"账号不符合要求");
         }
         result.setData(passportInfo);
         log.info("查询的账号信息：result:{}", JSON.toJSONString(result));

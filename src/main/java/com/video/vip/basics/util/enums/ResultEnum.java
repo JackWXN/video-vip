@@ -8,8 +8,17 @@ import lombok.Setter;
  * @author 何智琦
  */
 public enum ResultEnum {
-    //成功类枚举，区间1-1000
+    /**
+     * 注册
+     */
     SUCCESS_REGISTER("注册成功",100),
+    REGISTER_ESISTS_YES("注册用户已经存在",-101),
+    REGISTER_PHONE_ESISTS_YES("注册手机号已经存在",-102),
+    REGISTER_PP_ESISTS_YES("注册帐号已经存在",-103),
+    REGISTER_ERROR("注册失败",-104),
+
+
+    //成功类枚举，区间1-1000
     SUCCESS_NO_LATEST_DATA("执行成功，而且已无最新数据",3),
     SUCCESS("执行成功",1),
     RECEIVE_SUCCESS("接收成功",2),
@@ -40,12 +49,7 @@ public enum ResultEnum {
     IMGVCODE_LOGIN_PUT("请输入图片验证码",-200),
     IMGVCODE_VALI_FAIL("图片验证码校验失败",-201),
     UNLAWFUL_REQUEST("非法请求",-202),
-    /**
-     * 注册错误返回码
-     */
-    REGISTER_ESISTS_YES("注册用户已经存在",-350),
-    REGISTER_PHONE_ESISTS_YES("注册手机号已经存在",-351),
-    REGISTER_PP_ESISTS_YES("注册帐号已经存在",-352),
+
     /**
      * 登录错误返回码
      */
@@ -69,33 +73,11 @@ public enum ResultEnum {
     SMS_FORMAT_ERROR("短信验证码格式错误",-10010),
     LONGIN_PWD_ERROR("用户密码错误",-10020),
 
-    /**
-     * 文件操作相关错误-20000到-29999
-     */
-    SFILE_BUSINESS_CODE_NULL_ERROR("静态文件服务-业务校验必须传递对应业务编码",-20000),
-    SFILE_CHECK_TYPE_NULL_ERROR("静态文件服务-传递的校验类型不存在",-20001),
-    FILE_PATCH_ERROR("没有取到对应的文件目录",-20003),
-    /**
-     * 数据库操作相关错误-30000到-39999
-     */
-    DB_NO_INFLUENCE_ERROR("数据库影响条数为0",-30000),
-    /**
-     * api返回提示语-40000到-49999
-     */
-    API_ERROR("网页跑丢啦",-40000),
-    /**
-     * 人脸识别相关-50000到-59999
-     */
-    FACE_VAGUE("人脸模糊",-50000),
-    FACE_EXISTS("人脸已经存在",-50001),
-    FACE_NOT_FOUND("未匹配到用户",-50002),
-    FACE_NO("图片中未找到人脸",-50003),
-    FACE_QPS_NO("QPS超限",-50004),
 
     /**
-     * 短信相关-60000到-69999
+     * 参数类
      */
-    SMS_OVER_MAX("短信次数超限",-60000),
+    PARAM_FORMAT_ERROR("参数缺失",-11000),
             ;
 
     @Getter

@@ -1,4 +1,4 @@
-package com.video.vip.controller.passport;
+package com.video.vip.controller.login;
 
 import com.alibaba.fastjson.JSONObject;
 import com.video.vip.basics.constant.CommonConstant;
@@ -6,6 +6,7 @@ import com.video.vip.basics.dto.Result;
 import com.video.vip.basics.dto.UserTokenDTO;
 import com.video.vip.basics.util.enums.ResultEnum;
 import com.video.vip.entity.dto.PassportPwdLoginDTO;
+import com.video.vip.entity.dto.PassportRegisterDTO;
 import com.video.vip.entity.dto.passport.PassportDTO;
 import com.video.vip.service.ImgCodeService;
 import com.video.vip.service.LoginService;
@@ -53,6 +54,22 @@ public class LoginController {
             result = Result.newResult(ResultEnum.EXCEPTION,ResultEnum.EXCEPTION.getMsg());
         }
         log.info("登出结束：result:{}",result.toJSONString());
+        return result;
+    }
+
+    @ApiOperation(value="账号+密码注册",response = Result.class)
+    @RequestMapping(value="/pwd/register", method=RequestMethod.POST)
+    public Result loginRegister(@RequestBody PassportRegisterDTO passportRegisterDTO) {
+        log.info("手机号+验证码注册开始：passportRegisterDTO:{}",JSONObject.toJSONString(passportRegisterDTO));
+        Result result;
+        if(StringUtils.isEmpty(passportRegisterDTO.getAccount())||StringUtils.isEmpty(passportRegisterDTO.getPwdAes())){
+            log.warn("账号|密码不能为空不能为空:passportRegisterDTO:{}", JSONObject.toJSONString(passportRegisterDTO));
+            result = Result.newResult(ResultEnum.PARAM_FORMAT_ERROR,ResultEnum.PARAM_FORMAT_ERROR.getMsg());
+        }else{
+            PassportOperationTypeEnum passportOperationTypeEnum = ApiUloginUtil.chackPassportType(passportRegisterDTO.getAccount());
+            result = loginService.register(passportOperationTypeEnum,passportRegisterDTO.getAccount(),passportRegisterDTO.getPwdAes(),ApiUloginUtil.TOKEN_OVERTIME_MS);
+        }
+        log.info("账号+密码注册注册结束：result:{}",result.toJSONString());
         return result;
     }
 

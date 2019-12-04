@@ -3,6 +3,7 @@ package com.video.vip.service;
 import com.video.vip.basics.dto.Result;
 import com.video.vip.entity.dto.passport.PassportDTO;
 import com.video.vip.util.enums.passport.PassportOperationTypeEnum;
+import lombok.NonNull;
 
 /**
  * 帐号登录相关操作
@@ -26,7 +27,17 @@ public interface LoginService {
     Result logoutByToken(String token);
 
     /**
-     * 根据密码登录
+     * 注册
+     * @param passportOperationTypeEnum PassportOperationTypeEnum枚举
+     * @param account 账号
+     * @param pwdAes 密码
+     * @param tokenExpiresMs token过期时间
+     * @return
+     */
+    Result register(PassportOperationTypeEnum passportOperationTypeEnum, String account, String pwdAes, Long tokenExpiresMs);
+
+    /**
+     * 登录
      * @param passportOperationTypeEnum PassportOperationTypeEnum枚举
      * @param account 账号
      * @param pwdAes 登录的密码（aes加密后的密码），key:PassportConstantUtil.PWD_AES_KEY

@@ -2,6 +2,7 @@ package com.video.vip;
 
 import com.video.vip.basics.util.properties.ProperServicesUtils;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
 import springfox.documentation.builders.ApiInfoBuilder;
 import springfox.documentation.builders.ParameterBuilder;
@@ -30,7 +31,7 @@ public class Swagger2 {
         tokenPar.name("vip-session").description("令牌").modelRef(new ModelRef("string")).parameterType("header").required(false).build();
         pars.add(tokenPar.build());
         ParameterBuilder tstampPar = new ParameterBuilder();
-        tstampPar.name("lb-tstamp").description("时间戳").modelRef(new ModelRef("string")).parameterType("header").required(false).build();
+        tstampPar.name("vip-tstamp").description("时间戳").modelRef(new ModelRef("string")).parameterType("header").required(false).build();
         pars.add(tstampPar.build());
         //添加head参数end
         return new Docket(DocumentationType.SWAGGER_2)
@@ -44,10 +45,9 @@ public class Swagger2 {
 
     private ApiInfo apiInfo() {
         return new ApiInfoBuilder()
-                .title("视频vip项目API接口")
-                .description("")
+                .title("视频vip项目API接口文档")
+                .description("视频vip项目API接口文档")
                 .termsOfServiceUrl("")
-                .contact(new Contact("","", ""))
                 .version("1.0")
                 .build();
     }

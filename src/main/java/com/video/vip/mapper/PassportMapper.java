@@ -6,6 +6,6 @@ import com.video.vip.entity.po.Passport;
 /**
  * Created by wxn on 2019/11/28
  */
-public interface LoginMapper extends BaseMapper<Passport> {
+public interface PassportMapper extends BaseMapper<Passport> {
 
 }

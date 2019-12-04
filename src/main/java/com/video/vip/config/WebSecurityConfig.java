@@ -1,5 +1,6 @@
 package com.video.vip.config;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.video.vip.basics.constant.CommonConstant;
 import com.video.vip.basics.dto.Result;
@@ -35,10 +36,13 @@ public class WebSecurityConfig extends WebMvcConfigurationSupport {
 
     @Override
     protected void addResourceHandlers(ResourceHandlerRegistry registry) {
-        registry.addResourceHandler("swagger-ui.html")
+        registry.addResourceHandler("/swagger-ui.html")
                 .addResourceLocations("classpath:/META-INF/resources/");
+
         registry.addResourceHandler("/webjars/**")
                 .addResourceLocations("classpath:/META-INF/resources/webjars/");
+
+        log.info("---------------------------------registry=={}", JSON.toJSONString(registry));
     }
 
     @Bean
@@ -51,14 +55,15 @@ public class WebSecurityConfig extends WebMvcConfigurationSupport {
         InterceptorRegistration addInterceptor = registry.addInterceptor(getSecurityInterceptor());
         // 拦截配置
         addInterceptor.addPathPatterns("/**");
+
         // 排除配置
-        addInterceptor.excludePathPatterns(
-                 "/swagger**"
+        addInterceptor.excludePathPatterns("/swagger**"
                 ,"/webjars/**"
+                ,"/img/vcode/**"
+                ,"/login/pwd/login"
         );
 
-        // 拦截配置
-        addInterceptor.addPathPatterns("/**");
+        log.info("============================================addInterceptor=={}", JSONObject.toJSONString(addInterceptor));
     }
 
     private class SecurityInterceptor extends HandlerInterceptorAdapter {
@@ -76,8 +81,7 @@ public class WebSecurityConfig extends WebMvcConfigurationSupport {
             Result result;
             String token = request.getHeader(CommonApiSecurityUtils.TOKEN_KEY);
             if(StringUtils.isEmpty(token)||token.trim().equals("null")){
-                log.warn("用户未登录:url:{},uri:{}"
-                        ,request.getRequestURL(),request.getRequestURI());
+                log.warn("用户未登录:url:{},uri:{}",request.getRequestURL(),request.getRequestURI());
                 result = Result.newResult(ResultEnum.LOGIN_NO,"");
             }else{
                 LoginService loginService = (LoginService) MyApplicationContextUtil.getContext().getBean("loginFacadeService");
