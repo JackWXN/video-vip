@@ -5,7 +5,7 @@ import lombok.Setter;
 
 /**
  * 接口返回对象枚举
- * @author 何智琦
+ * @author wxn
  */
 public enum ResultEnum {
     /**

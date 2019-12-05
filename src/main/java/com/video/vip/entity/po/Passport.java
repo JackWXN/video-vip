@@ -1,17 +1,13 @@
 package com.video.vip.entity.po;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.video.vip.entity.po.base.BaseModel;
 import lombok.Data;
 
-import java.util.Date;
-
 /**
  * 用户帐号实体
  *
- * @author 何智琦
+ * @author wxn
  */
 @Data
 @TableName(value = "passport")

@@ -14,7 +14,7 @@ import org.springframework.stereotype.Service;
 
 /**
  * 验证码图片业务操作实现类
- * @author 何智琦
+ * @author wxn
  */
 @Slf4j
 @Component

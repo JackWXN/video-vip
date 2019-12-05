@@ -6,10 +6,7 @@ import com.video.vip.basics.dto.Result;
 import com.video.vip.basics.dto.UserTokenDTO;
 import com.video.vip.basics.util.enums.ResultEnum;
 import com.video.vip.basics.util.enums.YesOrNoEnum;
-import com.video.vip.entity.dto.PassportPwdLoginDTO;
-import com.video.vip.entity.dto.PassportRegisterDTO;
-import com.video.vip.entity.dto.PasswordUpdateDTO;
-import com.video.vip.entity.dto.passport.PassportDTO;
+import com.video.vip.entity.dto.passport.*;
 import com.video.vip.service.ImgCodeService;
 import com.video.vip.service.LoginService;
 import com.video.vip.util.enums.passport.PassportOperationTypeEnum;
@@ -121,6 +118,23 @@ public class LoginController {
             //获取解析后的token
             UserTokenDTO tUserTokenDTO = (UserTokenDTO) request.getAttribute(CommonConstant.USER_TOKEN_KEY);
             result = loginService.updateOldPassword(logStr, PassportOperationTypeEnum.PID,tUserTokenDTO.getPid().toString(),passwordUpdateDTO.getNewPasswordAes(),passwordUpdateDTO.getOldPasswordAes(), YesOrNoEnum.NO,null);
+        }
+        log.info("{}结束：result:{}", logStr, result.toJSONString());
+        return result;
+    }
+
+    @ApiOperation(value="重置当天尝试修改密码总次数",response = Result.class)
+    @RequestMapping(value="/admin/resetEditCount", method=RequestMethod.POST)
+    public Result resetEditCount(@RequestBody PassportPwdResetDTO passportPwdResetDTO) {
+        String logStr = "重置当天尝试修改密码总次数";
+        log.info("{}开始：passportPwdResetDTO:{}",logStr, JSONObject.toJSONString(passportPwdResetDTO));
+        Result result;
+        if(StringUtils.isEmpty(passportPwdResetDTO.getAccount())){
+            log.warn("账号不能为空:passportPwdResetDTO:{}",JSONObject.toJSONString(passportPwdResetDTO));
+            result = Result.newResult(ResultEnum.FAIL,"账号不能为空");
+        }else{
+            PassportOperationTypeEnum passportOperationTypeEnum = ApiUloginUtil.chackPassportType(passportPwdResetDTO.getAccount());
+            result = loginService.resetTodayEditPwdCount(logStr,passportOperationTypeEnum,passportPwdResetDTO.getAccount());
         }
         log.info("{}结束：result:{}", logStr, result.toJSONString());
         return result;

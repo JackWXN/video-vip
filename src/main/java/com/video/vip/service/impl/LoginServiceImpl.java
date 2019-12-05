@@ -340,4 +340,43 @@ public class LoginServiceImpl implements LoginService {
         }
         return result;
     }
+
+    @Override
+    public Result resetTodayEditPwdCount(String logStr, @NonNull PassportOperationTypeEnum passportOperationTypeEnum, @NonNull String account){
+        log.info("业务处理{}开始:passportOperationTypeEnum:{},account:{}",logStr,passportOperationTypeEnum,account);
+        try{
+            Result<Passport> passportResult = getPassportByAccount(passportOperationTypeEnum,account);
+            if(!passportResult.isSuccess()||passportResult.getData()==null){
+                return Result.newResult(ResultEnum.FAIL,"重置失败，对应的账号不存在");
+            }
+            //当天的时间
+            String strNowDate = DateUtil.getDateTime(new Date(),"yyyyMMdd");
+            Passport editPassport = new Passport();
+            int intEdit = 0;
+            if(passportResult.getData().getPasswordEditDate()==null||!passportResult.getData().getPasswordEditDate().equals(strNowDate)){
+                editPassport.setId(passportResult.getData().getId());
+                editPassport.setPasswordEditDate(strNowDate);
+                editPassport.setPasswordEditDateCount(0);
+                editPassport.setPasswordEditResetCount(0);
+                intEdit = passportDAO.updateById(editPassport);
+            }else if(passportResult.getData().getPasswordEditDateCount()!=null&&passportResult.getData().getPasswordEditDateCount()<PassportConstantUtil.EDIT_TODAY_PWD_MAX_COUNT){
+                log.warn("当日尝试修改密码次数未使用完成，不允许重置：passport:{}",JSONObject.toJSONString(passportResult.getData()));
+                return Result.newResult(ResultEnum.FAIL,"重置失败，当日修改密码次数未用尽。当天剩余尝试修改密码次数"+(PassportConstantUtil.EDIT_TODAY_PWD_MAX_COUNT-passportResult.getData().getPasswordEditDateCount()));
+            }else if(passportResult.getData().getPasswordEditResetCount()!=null&&passportResult.getData().getPasswordEditResetCount()>=PassportConstantUtil.EDIT_PWD_MAX_COUNT_RESET_MAX_COUNT){
+                return Result.newResult(ResultEnum.FAIL,"重置失败，当日重置次数用尽");
+            }else{
+                editPassport.setId(passportResult.getData().getId());
+                editPassport.setPasswordEditDateCount(0);
+                editPassport.setPasswordEditResetCount(passportResult.getData().getPasswordEditResetCount()==null? 1 :(passportResult.getData().getPasswordEditResetCount()+1));
+                intEdit = passportDAO.updateById(editPassport);
+            }
+            if(intEdit<1){
+                return Result.newResult(ResultEnum.FAIL,"重置失败");
+            }
+            return Result.newSuccess("重置成功，当天剩余重置次数"+(PassportConstantUtil.EDIT_PWD_MAX_COUNT_RESET_MAX_COUNT-editPassport.getPasswordEditResetCount()));
+        }catch (Exception e){
+            log.error("{},接口异常。",logStr,e);
+            return Result.newResult(ResultEnum.FAIL,ResultEnum.FAIL.getMsg());
+        }
+    }
 }

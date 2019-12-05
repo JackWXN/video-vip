@@ -1,4 +1,4 @@
-package com.video.vip.entity.dto;
+package com.video.vip.entity.dto.passport;
 
 import io.swagger.annotations.ApiModel;
 import io.swagger.annotations.ApiModelProperty;

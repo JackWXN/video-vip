@@ -9,7 +9,7 @@ import redis.clients.jedis.Jedis;
 
 /**
  * 通用工具包
- * @author 何智琦
+ * @author wxn
  */
 @Slf4j
 public class CommonApiSecurityUtils {

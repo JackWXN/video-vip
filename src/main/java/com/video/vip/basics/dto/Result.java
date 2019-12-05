@@ -9,7 +9,7 @@ import java.io.Serializable;
 
 /**
  * 接口返回类型
- * @author 何智琦
+ * @author wxn
  */
 @Data
 public class Result<T> implements Serializable {

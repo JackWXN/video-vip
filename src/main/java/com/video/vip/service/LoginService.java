@@ -59,4 +59,13 @@ public interface LoginService {
      * @return
      */
     Result updateOldPassword(String logStr, PassportOperationTypeEnum passportOperationTypeEnum, String account, String newPasswordAes, String oldPasswordAes, YesOrNoEnum isReadyPwd, Map<String,Object> params);
+
+    /**
+     * 重置当天尝试修改密码总次数
+     * @param logStr
+     * @param passportOperationTypeEnum PassportOperationTypeEnum枚举
+     * @param account 账号，pid|phone|mail
+     * @return
+     */
+    Result resetTodayEditPwdCount(String logStr, PassportOperationTypeEnum passportOperationTypeEnum, String account);
 }

@@ -13,7 +13,7 @@ import org.springframework.util.StringUtils;
 
 /**
  * 密码相关操作工具类
- * @author 何智琦
+ * @author wxn
  */
 @Slf4j
 public class PasswordUtil {

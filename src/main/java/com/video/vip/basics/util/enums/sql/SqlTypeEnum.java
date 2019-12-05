@@ -5,7 +5,7 @@ import lombok.Setter;
 
 /**
  * sql语句类型枚举
- * @author 何智琦
+ * @author wxn
  */
 public enum SqlTypeEnum {
     INSERT("新增",1),

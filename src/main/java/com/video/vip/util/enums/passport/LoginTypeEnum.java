@@ -5,7 +5,7 @@ import lombok.Setter;
 
 /**
  * 登录类型枚举
- * @author 何智琦
+ * @author wxn
  */
 public enum LoginTypeEnum {
     /**

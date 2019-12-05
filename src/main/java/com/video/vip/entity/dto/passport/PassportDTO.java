@@ -8,7 +8,7 @@ import java.util.Date;
 /**
  * 用户帐号实体
  *
- * @author 何智琦
+ * @author wxn
  */
 @Data
 public class PassportDTO{

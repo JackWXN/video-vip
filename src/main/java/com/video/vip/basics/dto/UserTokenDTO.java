@@ -9,7 +9,7 @@ import java.util.Date;
 
 /**
  * 用户token解析相关
- * @author 何智琦
+ * @author wxn
  */
 @Data
 public class UserTokenDTO implements Serializable {
