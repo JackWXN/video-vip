@@ -8,6 +8,8 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.Date;
+
 
 /**
  * Created by wxn on 2019/11/28
@@ -35,4 +37,10 @@ public class PassportDAO {
     public int savePassport(@NonNull Passport passport){
         return passportMapper.insert(passport);
     }
+
+    public int updateById(@NonNull Passport passport){
+        passport.setUpdateDate(new Date());
+        return passportMapper.updateById(passport);
+    }
+
 }

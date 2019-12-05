@@ -3,11 +3,13 @@ package com.video.vip.service.impl;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.video.vip.basics.dto.Result;
-import com.video.vip.basics.util.encryptions.Md5Util;
+import com.video.vip.basics.util.basics.DateUtil;
 import com.video.vip.basics.util.enums.ResultEnum;
+import com.video.vip.basics.util.enums.YesOrNoEnum;
 import com.video.vip.basics.util.pwd.PassportConstantUtil;
-import com.video.vip.dao.PassportDAO;
+import com.video.vip.basics.util.pwd.PhoneUtil;
 import com.video.vip.dao.LoginTrailDAO;
+import com.video.vip.dao.PassportDAO;
 import com.video.vip.entity.dto.passport.PassportDTO;
 import com.video.vip.entity.po.LoginTrail;
 import com.video.vip.entity.po.Passport;
@@ -24,6 +26,9 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
+
+import java.util.Date;
+import java.util.Map;
 
 /**
  * 帐号登录相关操作实现
@@ -148,10 +153,10 @@ public class LoginServiceImpl implements LoginService {
                     result = Result.newResult(ResultEnum.LOGIN_DISABLE,"账号被冻结");
                 }else {
                     PassportDTO passportDTO = new PassportDTO();
-                    BeanUtils.copyProperties(passportResult.getData(),passportDTO);
+                    BeanUtils.copyProperties(passport,passportDTO);
                     result.setData(passportDTO);
                     //校验密码
-                    Result<String> passwordCheckResult = PasswordUtil.encryption(pwdAes,passportDTO.getPasswordSalt(),false);
+                    Result<String> passwordCheckResult = PasswordUtil.encryption(pwdAes,passportDTO.getPasswordSalt(),true);
                     if(passwordCheckResult.isSuccess()){
                         if(passportDTO.getPassword().equals(passwordCheckResult.getData())){
                             log.debug("密码比对通过：passwordCheckResult:{}",passwordCheckResult.toJSONString());
@@ -211,11 +216,128 @@ public class LoginServiceImpl implements LoginService {
         } else {
             jsonObject.put("roles", null);
         }
+        if(!StringUtils.isEmpty(phone)){
+            phone = PhoneUtil.encryption(phone);
+        }
         String token = JavaWebTokenUtil.createJWT(pId, roles == null ? null : roles.toJSONString(), phone, tokenExpiresSecond);
         jsonObject.put("pId", pId);
         jsonObject.put("phone", phone);
         jsonObject.put("token", token);
         log.info("生成token结束{}", jsonObject.toJSONString());
         return jsonObject.toJSONString();
+    }
+
+    @Override
+    public Result updateOldPassword(String logStr, PassportOperationTypeEnum passportOperationTypeEnum, String account, String newPasswordAes, String oldPasswordAes, YesOrNoEnum isReadyPwd, Map<String,Object> params){
+        log.info("{}。业务处理开始:passportOperationTypeEnum:{},account:{},newPasswordAes:{},oldPasswordAes:{},isReadyPwd:{}",logStr,passportOperationTypeEnum,account,newPasswordAes,oldPasswordAes,isReadyPwd);
+        try{
+            Result<Passport> passportResult = getPassportByAccount(passportOperationTypeEnum,account);
+            if(!passportResult.isSuccess()||passportResult.getData()==null){
+                return Result.newResult(ResultEnum.FAIL,"修改失败，对应的账号不存在");
+            }
+            Passport passport = passportResult.getData();
+            //验证密码是否可用
+            Result<String> newPasswordCheckResult = PasswordUtil.encryption(newPasswordAes,null,true);
+            if(!newPasswordCheckResult.isSuccess()){
+                return Result.newResult(ResultEnum.FAIL,"密码不符合要求");
+            }
+            log.debug("传递了老密码，校验老密码是否正确:oldPasswordAes:{}",oldPasswordAes);
+            Result<String> oldPasswordCheckResult = PasswordUtil.encryption(oldPasswordAes,passport.getPasswordSalt(),false);
+            if(!oldPasswordCheckResult.isSuccess()){
+                return Result.newResult(ResultEnum.FAIL,"旧密码不正确");
+            }
+            String oldPassword = oldPasswordCheckResult.getData();
+            if(!passport.getPassword().equals(oldPassword)){
+                log.warn("密码错误，不允许修改：passport:{},oldPassword:{}",JSONObject.toJSONString(passport),oldPassword);
+                return Result.newResult(ResultEnum.FAIL,"账号或密码错误");
+            }
+            Result updatePasswordResult = updatePasswordByPassport(passport,newPasswordAes,isReadyPwd);
+            if(!updatePasswordResult.isSuccess()){
+                return Result.newResult(ResultEnum.FAIL,"密码修改失败");
+            }
+            return Result.newSuccess();
+        }catch (Exception e){
+            log.error("{}，异常。",logStr,e);
+            return Result.newResult(ResultEnum.EXCEPTION,"接口异常");
+        }
+    }
+
+
+    /**
+     * 根据pid修改密码
+     *
+     * @param : passport   查询出来的最新的账号信息
+     * @param : password   要修改的密码
+     * @param : isReadyPwd 是否进行预处理密码，如果是是，则不直接修改主密码
+     * @author : wxn
+     * @date : 2019/12/4 17:37
+     */
+    private Result updatePasswordByPassport(@NonNull Passport passport,@NonNull String password,@NonNull YesOrNoEnum isReadyPwd) {
+        log.info("根据pid修改密码开始:passport:{},password:{}",JSONObject.toJSONString(passport),password);
+        Result result = verifyEditPassword(passport);
+        if(result.isSuccess()){
+            String pwdSalt = PasswordUtil.generatePwdSalt();
+            Result<String> passwordCheckResult = PasswordUtil.encryption(password,pwdSalt,true);
+            if(passwordCheckResult.isSuccess()){
+                int intEdit = 0;
+                if(isReadyPwd.equals(YesOrNoEnum.YES)){
+                    log.debug("执行预处理保存密码");
+                    Passport editPassport = new Passport();
+                    editPassport.setId(passport.getId());
+                    editPassport.setPpReadyPwd(passwordCheckResult.getData());
+                    editPassport.setPpReadyPwdSalt(pwdSalt);
+                    intEdit = passportDAO.updateById(editPassport);
+                }else{
+                    log.debug("执行保存主密码");
+                    Passport editPassport = new Passport();
+                    editPassport.setId(passport.getId());
+                    editPassport.setPassword(passwordCheckResult.getData());
+                    editPassport.setPasswordSalt(pwdSalt);
+                    intEdit = passportDAO.updateById(editPassport);
+                }
+                if(intEdit<1){
+                    log.warn("修改密码错误，数据库影响条数为0：intEdit:{},passport:{}",intEdit,JSONObject.toJSONString(passport));
+                    result = Result.newResult(ResultEnum.FAIL,"修改密码失败");
+                }
+            }
+        }
+        log.info("根据pid修改密码结束:result:{}",result.toJSONString());
+        return result;
+    }
+
+    /**
+     * 验证是否可以修改密码
+     *
+     * @param : passport 查询出来的最新的账号信息
+     * @author : wxn
+     * @date : 2019/12/4 17:24
+     */
+    private Result verifyEditPassword(@NonNull Passport passport) {
+        log.info("验证是否可以修改密码开始:passport:{}",JSON.toJSONString(passport));
+        Result result = Result.newSuccess();
+        //当天的时间
+        String strNowDate = DateUtil.getDateTime(new Date(),"yyyyMMdd");
+        Passport editPassport = new Passport();
+        editPassport.setId(passport.getId());
+        //修改值
+        int intEdit = 0;
+        //判断当天是否尝试过修改密码
+        if(passport.getPasswordEditDate()==null||!passport.getPasswordEditDate().equals(strNowDate)){
+            editPassport.setPasswordEditDate(strNowDate);
+            editPassport.setPasswordEditDateCount(1);
+            editPassport.setPasswordEditResetCount(0);
+            intEdit = passportDAO.updateById(editPassport);
+        }else if(passport.getPasswordEditDateCount()>=PassportConstantUtil.EDIT_TODAY_PWD_MAX_COUNT){
+            log.warn("当天尝试修改密码次数超限:passwordEditDateCount:{},passport:{}",PassportConstantUtil.EDIT_TODAY_PWD_MAX_COUNT, JSONObject.toJSONString(passport));
+            result = Result.newResult(ResultEnum.FAIL,"请明天再修改密码，或联系管理员");
+        }else{
+            log.debug("验证通过，尝试修改密码次数+1");
+            editPassport.setPasswordEditDateCount(passport.getPasswordEditDateCount()==null?0:(passport.getPasswordEditDateCount()+1));
+            intEdit = passportDAO.updateById(editPassport);
+        }
+        if(result.isSuccess()&&intEdit==0){
+            log.warn("验证是否可以修改密码初始化时间和次数失败,数据库影响条数为0:intEdit:{},passport:{}",intEdit, JSONObject.toJSONString(passport));
+        }
+        return result;
     }
 }

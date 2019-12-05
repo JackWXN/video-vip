@@ -5,8 +5,10 @@ import com.video.vip.basics.constant.CommonConstant;
 import com.video.vip.basics.dto.Result;
 import com.video.vip.basics.dto.UserTokenDTO;
 import com.video.vip.basics.util.enums.ResultEnum;
+import com.video.vip.basics.util.enums.YesOrNoEnum;
 import com.video.vip.entity.dto.PassportPwdLoginDTO;
 import com.video.vip.entity.dto.PassportRegisterDTO;
+import com.video.vip.entity.dto.PasswordUpdateDTO;
 import com.video.vip.entity.dto.passport.PassportDTO;
 import com.video.vip.service.ImgCodeService;
 import com.video.vip.service.LoginService;
@@ -103,6 +105,24 @@ public class LoginController {
             }
         }
         log.info("账号+密码登录结束：result:{}",result.toJSONString());
+        return result;
+    }
+
+    @ApiOperation(value="根据老密码修改自己的密码",response = Result.class)
+    @RequestMapping(value="/pwd/oldPassword/edit", method=RequestMethod.POST)
+    public Result updateOldPassword(@RequestBody PasswordUpdateDTO passwordUpdateDTO) {
+        String logStr = "根据老密码修改自己的密码";
+        log.info("{}开始：passwordUpdateDTO:{}", logStr,JSONObject.toJSONString(passwordUpdateDTO));
+        Result result;
+        if(null==passwordUpdateDTO||StringUtils.isEmpty(passwordUpdateDTO.getOldPasswordAes())||StringUtils.isEmpty(passwordUpdateDTO.getNewPasswordAes())){
+            log.warn("老密码|新密码不能为空:passwordUpdateDTO:{}",JSONObject.toJSONString(passwordUpdateDTO));
+            result = Result.newResult(ResultEnum.NOT_NULL,"老密码|新密码不能为空");
+        }else{
+            //获取解析后的token
+            UserTokenDTO tUserTokenDTO = (UserTokenDTO) request.getAttribute(CommonConstant.USER_TOKEN_KEY);
+            result = loginService.updateOldPassword(logStr, PassportOperationTypeEnum.PID,tUserTokenDTO.getPid().toString(),passwordUpdateDTO.getNewPasswordAes(),passwordUpdateDTO.getOldPasswordAes(), YesOrNoEnum.NO,null);
+        }
+        log.info("{}结束：result:{}", logStr, result.toJSONString());
         return result;
     }
 

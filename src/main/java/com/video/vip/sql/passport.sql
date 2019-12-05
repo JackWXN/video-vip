@@ -1,7 +1,7 @@
 CREATE TABLE `passport` (
   `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '主键自增',
-	`create_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-  `update_date` datetime NOT NULL DEFAULT '0000-00-00 00:00:00' COMMENT '修改时间',
+  `create_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+  `update_date` datetime NOT NULL DEFAULT CURRENT_TIMESTAMP COMMENT '修改时间',
   `version` int(11) NOT NULL DEFAULT '0' COMMENT '版本号',
   `phone` varchar(20) DEFAULT NULL COMMENT '帐号手机号，用户的手机号，全表唯一',
   `password` varchar(50) NOT NULL DEFAULT '' COMMENT '帐号登录密码，md5加密',

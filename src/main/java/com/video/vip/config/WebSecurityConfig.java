@@ -41,8 +41,6 @@ public class WebSecurityConfig extends WebMvcConfigurationSupport {
 
         registry.addResourceHandler("/webjars/**")
                 .addResourceLocations("classpath:/META-INF/resources/webjars/");
-
-        log.info("---------------------------------registry=={}", JSON.toJSONString(registry));
     }
 
     @Bean
@@ -59,11 +57,11 @@ public class WebSecurityConfig extends WebMvcConfigurationSupport {
         // 排除配置
         addInterceptor.excludePathPatterns("/swagger**"
                 ,"/webjars/**"
+                ,"/swagger-resources/**"
                 ,"/img/vcode/**"
+                ,"/login/pwd/register"
                 ,"/login/pwd/login"
         );
-
-        log.info("============================================addInterceptor=={}", JSONObject.toJSONString(addInterceptor));
     }
 
     private class SecurityInterceptor extends HandlerInterceptorAdapter {
@@ -84,7 +82,7 @@ public class WebSecurityConfig extends WebMvcConfigurationSupport {
                 log.warn("用户未登录:url:{},uri:{}",request.getRequestURL(),request.getRequestURI());
                 result = Result.newResult(ResultEnum.LOGIN_NO,"");
             }else{
-                LoginService loginService = (LoginService) MyApplicationContextUtil.getContext().getBean("loginFacadeService");
+                LoginService loginService = (LoginService) MyApplicationContextUtil.getContext().getBean("loginService");
                 String strJsonToken = loginService.validateToken(token);
                 if(StringUtils.isEmpty(strJsonToken)){
                     log.warn("用户token过期或未登录:token:{},strJsonToken:{}"
