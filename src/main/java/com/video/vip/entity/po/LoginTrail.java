@@ -1,12 +1,8 @@
 package com.video.vip.entity.po;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
 import com.baomidou.mybatisplus.annotation.TableName;
 import com.video.vip.entity.po.base.BaseModel;
 import lombok.Data;
-
-import java.util.Date;
 
 /**
  * Created by wxn on 2019/11/29
@@ -14,6 +10,7 @@ import java.util.Date;
 @Data
 @TableName(value = "login_trail")
 public class LoginTrail extends BaseModel {
+    private static final long serialVersionUID = 7610227496043487863L;
 
     /**
      * pid

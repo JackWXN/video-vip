@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+<mapper namespace="com.video.vip.mapper.UserInfoMapper" >
+
+    <!-- 查询用户列表（分页）-->
+    <select id="queryUserPageList" parameterType="com.video.vip.entity.bo.UserAllInfoBO" resultType="com.video.vip.entity.dto.user.QueryUserInfoDTO">
+        SELECT
+            a.id,
+            a.pid,
+            a.create_date createDate,
+            a.update_date updateDate,
+            a.name,
+            a.head_img_url headImgUrl,
+            a.source,
+            a.referrer_pid referrerPid,
+            a.vip_status vipStatus,
+            a.vip_type vipType,
+            a.vip_start_date vipStartDate,
+            a.vip_end_date vipEndDate,
+            a.user_platform userPlatform,
+            b.phone
+        FROM
+            user_info a
+        LEFT JOIN passport b ON a.pid = b.id
+        <where>
+            1 = 1
+            <if test="startTime != null and startTime != ''">
+                and a.create_time <![CDATA[ >= ]]> #{startTime}
+            </if>
+            <if test="endTime != null and endTime != ''">
+                and a.create_time <![CDATA[ <= ]]> #{endTime}
+            </if>
+            <if test="vipStatus != null and vipStatus != ''">
+                and a.vip_status = #{vipStatus}
+            </if>
+            <if test="source != null and source != ''">
+                and a.source = #{source}
+            </if>
+            <if test="userPlatform != null and userPlatform != ''">
+                and a.user_platform = #{userPlatform}
+            </if>
+            <if test="phone != null and phone != ''">
+                and b.phone = #{phone}
+            </if>
+            order by a.create_time DESC
+        </where>
+    </select>
+</mapper>
