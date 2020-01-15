@@ -72,7 +72,7 @@ public class LoginController {
         return result;
     }
 
-    @ApiOperation(value="账号+密码登录",response = Result.class)
+    @ApiOperation(value="账号+密码登录（如果未注册则注册并登录）",response = Result.class)
     @RequestMapping(value="/pwd/login", method=RequestMethod.POST)
     public Result<JSONObject> login(@RequestBody PassportPwdLoginDTO passportPwdLoginDTO) {
         log.info("账号+密码登录开始：passportPwdLoginDTO:{}",JSONObject.toJSONString(passportPwdLoginDTO));
