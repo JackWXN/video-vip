@@ -1,5 +1,6 @@
 package com.video.vip.controller.login;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONObject;
 import com.video.vip.basics.constant.CommonConstant;
 import com.video.vip.basics.dto.Result;
@@ -7,8 +8,12 @@ import com.video.vip.basics.dto.UserTokenDTO;
 import com.video.vip.basics.util.enums.ResultEnum;
 import com.video.vip.basics.util.enums.YesOrNoEnum;
 import com.video.vip.entity.dto.passport.*;
+import com.video.vip.entity.dto.user.SaveUserInfoDTO;
 import com.video.vip.service.ImgCodeService;
 import com.video.vip.service.LoginService;
+import com.video.vip.service.UserCenterService;
+import com.video.vip.util.enums.UserPlatformEnum;
+import com.video.vip.util.enums.UserSourceEnum;
 import com.video.vip.util.enums.passport.PassportOperationTypeEnum;
 import com.video.vip.util.login.ApiUloginUtil;
 import io.swagger.annotations.Api;
@@ -37,6 +42,9 @@ public class LoginController {
 
     @Autowired
     private ImgCodeService imgCodeService;
+
+    @Autowired
+    private UserCenterService userCenterService;
 
     @ApiOperation(value="登出", response = Result.class)
     @RequestMapping(value="/logout", method= RequestMethod.POST)
@@ -83,6 +91,10 @@ public class LoginController {
         }else if(StringUtils.isEmpty(passportPwdLoginDTO.getAccount())||StringUtils.isEmpty(passportPwdLoginDTO.getPwdAes())){
             log.warn("账号|图片验证码|密码不能为空:clcPassportPwdLoginPDTO:{}", JSONObject.toJSONString(passportPwdLoginDTO));
             result = Result.newResult(ResultEnum.FAIL,"账号|密码不能为空");
+        }else if(null==passportPwdLoginDTO.getSource() || null==passportPwdLoginDTO.getUserPlatform() || null== UserPlatformEnum.codeOf(passportPwdLoginDTO.getUserPlatform())){
+            result = Result.newResult(ResultEnum.PARAM_FORMAT_ERROR, ResultEnum.PARAM_FORMAT_ERROR.getMsg());
+        }else if(UserSourceEnum.USER_SOURCE2.getCode() == passportPwdLoginDTO.getSource() && org.apache.commons.lang.StringUtils.isEmpty(passportPwdLoginDTO.getReferrerPid())){
+            result = Result.newResult(ResultEnum.PARAM_FORMAT_ERROR, ResultEnum.PARAM_FORMAT_ERROR.getMsg());
         }else{
             String imgKey = getPwdKey(passportPwdLoginDTO);
             Result imgCodeCheckResult = imgCodeService.verifyImgCode(imgKey,passportPwdLoginDTO.getImgVcode());
@@ -90,10 +102,21 @@ public class LoginController {
                 log.debug("图片验证码校验成功:clcPassportPwdLoginPDTO:{}", JSONObject.toJSONString(passportPwdLoginDTO));
                 PassportOperationTypeEnum passportOperationTypeEnum = ApiUloginUtil.chackPassportType(passportPwdLoginDTO.getAccount());
                 Result<PassportDTO> loginResult = loginService.login(passportOperationTypeEnum,passportPwdLoginDTO.getAccount(),passportPwdLoginDTO.getPwdAes(),ApiUloginUtil.TOKEN_OVERTIME_MS);
+                log.info("注册登录结果 loginResult={}", JSON.toJSONString(loginResult));
                 if(loginResult.isSuccess()){
-                    JSONObject joData = new JSONObject();
-                    joData.put("token",loginResult.getData().getToken());
-                    result = Result.newSuccess(joData);
+                    SaveUserInfoDTO saveUserInfoDTO = new SaveUserInfoDTO();
+                    saveUserInfoDTO.setReferrerPid(passportPwdLoginDTO.getReferrerPid());
+                    saveUserInfoDTO.setSource(passportPwdLoginDTO.getSource());
+                    saveUserInfoDTO.setUserPlatform(passportPwdLoginDTO.getSource());
+                    Result saveUserResult = userCenterService.saveUserInfo("新增用户信息", loginResult.getData().getId(), saveUserInfoDTO);
+                    log.info("新增用户信息结果 saveUserResult={}", JSON.toJSONString(saveUserResult));
+                    if(!saveUserResult.isSuccess()){
+                        result = Result.newResult(saveUserResult.getCode(),saveUserResult.getMessage());
+                    }else {
+                        JSONObject joData = new JSONObject();
+                        joData.put("token",loginResult.getData().getToken());
+                        result = Result.newSuccess(joData);
+                    }
                 }else{
                     result.setCode(loginResult.getCode());
                     result.setMessage(loginResult.getMessage());

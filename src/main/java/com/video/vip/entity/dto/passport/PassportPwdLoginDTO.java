@@ -27,4 +27,14 @@ public class PassportPwdLoginDTO implements Serializable {
     @ApiModelProperty(value = "前端key,图片验证码的时传的唯一key")
     private String randomKey;
 
+
+
+    @ApiModelProperty(value = "用户来源 枚举 UserSourceEnum 0:自己注册 1:好友分享")
+    private Integer source;
+
+    @ApiModelProperty(value = "该用户介绍人pid")
+    private String referrerPid;
+
+    @ApiModelProperty(value = "用户所属平台。枚举 UserPlatformEnum 0:C端普通用户 1:B端运营人员")
+    private Integer userPlatform;
 }
