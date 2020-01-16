@@ -8,10 +8,8 @@ import com.video.vip.basics.dto.UserTokenDTO;
 import com.video.vip.basics.util.enums.ResultEnum;
 import com.video.vip.basics.util.enums.YesOrNoEnum;
 import com.video.vip.entity.dto.passport.*;
-import com.video.vip.entity.dto.user.SaveUserInfoDTO;
 import com.video.vip.service.ImgCodeService;
 import com.video.vip.service.LoginService;
-import com.video.vip.service.UserCenterService;
 import com.video.vip.util.enums.UserPlatformEnum;
 import com.video.vip.util.enums.UserSourceEnum;
 import com.video.vip.util.enums.passport.PassportOperationTypeEnum;
@@ -42,9 +40,6 @@ public class LoginController {
 
     @Autowired
     private ImgCodeService imgCodeService;
-
-    @Autowired
-    private UserCenterService userCenterService;
 
     @ApiOperation(value="登出", response = Result.class)
     @RequestMapping(value="/logout", method= RequestMethod.POST)
@@ -104,19 +99,9 @@ public class LoginController {
                 Result<PassportDTO> loginResult = loginService.login(passportOperationTypeEnum,passportPwdLoginDTO.getAccount(),passportPwdLoginDTO.getPwdAes(),ApiUloginUtil.TOKEN_OVERTIME_MS);
                 log.info("注册登录结果 loginResult={}", JSON.toJSONString(loginResult));
                 if(loginResult.isSuccess()){
-                    SaveUserInfoDTO saveUserInfoDTO = new SaveUserInfoDTO();
-                    saveUserInfoDTO.setReferrerPid(passportPwdLoginDTO.getReferrerPid());
-                    saveUserInfoDTO.setSource(passportPwdLoginDTO.getSource());
-                    saveUserInfoDTO.setUserPlatform(passportPwdLoginDTO.getSource());
-                    Result saveUserResult = userCenterService.saveUserInfo("新增用户信息", loginResult.getData().getId(), saveUserInfoDTO);
-                    log.info("新增用户信息结果 saveUserResult={}", JSON.toJSONString(saveUserResult));
-                    if(!saveUserResult.isSuccess()){
-                        result = Result.newResult(saveUserResult.getCode(),saveUserResult.getMessage());
-                    }else {
-                        JSONObject joData = new JSONObject();
-                        joData.put("token",loginResult.getData().getToken());
-                        result = Result.newSuccess(joData);
-                    }
+                    JSONObject joData = new JSONObject();
+                    joData.put("token",loginResult.getData().getToken());
+                    result = Result.newSuccess(joData);
                 }else{
                     result.setCode(loginResult.getCode());
                     result.setMessage(loginResult.getMessage());

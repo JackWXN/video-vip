@@ -142,46 +142,42 @@ public class LoginServiceImpl implements LoginService {
         try {
             Result<Passport> passportResult = getPassportByAccount(passportOperationTypeEnum,account);
             if(!passportResult.isSuccess()){
-                Result registerResult = register(passportOperationTypeEnum, account, pwdAes, tokenExpiresMs);
-                if(!registerResult.isSuccess()){
-                    return Result.newResult(ResultEnum.LONGIN_PWD_ERROR,"注册失败");
-                }else {
-                    passportResult = getPassportByAccount(passportOperationTypeEnum,account);
-                }
-            }
-            Passport passport = passportResult.getData();
-            if(null==passport){
                 result = Result.newResult(ResultEnum.LONGIN_PWD_ERROR,"未注册");
-            } else if (passport.getStatus()==UserStatusEnum.DISABLE.getCode()) {
-                result = Result.newResult(ResultEnum.LOGIN_DISABLE,"账号被禁用");
-            } else if (passport.getStatus()==UserStatusEnum.HANDING.getCode()) {
-                result = Result.newResult(ResultEnum.LOGIN_DISABLE,"账号被冻结");
             }else {
-                PassportDTO passportDTO = new PassportDTO();
-                BeanUtils.copyProperties(passport,passportDTO);
-                result.setData(passportDTO);
-                //校验密码
-                Result<String> passwordCheckResult = PasswordUtil.encryption(pwdAes,passportDTO.getPasswordSalt(),true);
-                if(passwordCheckResult.isSuccess()){
-                    if(passportDTO.getPassword().equals(passwordCheckResult.getData())){
-                        log.debug("密码比对通过：passwordCheckResult:{}",passwordCheckResult.toJSONString());
-                        LoginTrail loginTrail = new LoginTrail();
-                        loginTrail.setPid(passport.getId());
-                        loginTrail.setOperationType(LoginTypeEnum.TYPE_LOGIN.getCode());
-                        loginTrailDAO.saveLoginTrail(loginTrail);
-                        //开始生成token
-                        String jsonToken = createToken(passportDTO.getId(), null, passportDTO.getPhone(), tokenExpiresMs);
-                        if(StringUtils.isEmpty(jsonToken)){
-                            log.warn("登录失败：jsonToken:{}",jsonToken);
-                            result = Result.newResult(ResultEnum.FAIL,"");
+                Passport passport = passportResult.getData();
+                if(null==passport){
+                    result = Result.newResult(ResultEnum.LONGIN_PWD_ERROR,"未注册");
+                } else if (passport.getStatus()==UserStatusEnum.DISABLE.getCode()) {
+                    result = Result.newResult(ResultEnum.LOGIN_DISABLE,"账号被禁用");
+                } else if (passport.getStatus()==UserStatusEnum.HANDING.getCode()) {
+                    result = Result.newResult(ResultEnum.LOGIN_DISABLE,"账号被冻结");
+                }else {
+                    PassportDTO passportDTO = new PassportDTO();
+                    BeanUtils.copyProperties(passport,passportDTO);
+                    result.setData(passportDTO);
+                    //校验密码
+                    Result<String> passwordCheckResult = PasswordUtil.encryption(pwdAes,passportDTO.getPasswordSalt(),true);
+                    if(passwordCheckResult.isSuccess()){
+                        if(passportDTO.getPassword().equals(passwordCheckResult.getData())){
+                            log.debug("密码比对通过：passwordCheckResult:{}",passwordCheckResult.toJSONString());
+                            LoginTrail loginTrail = new LoginTrail();
+                            loginTrail.setPid(passport.getId());
+                            loginTrail.setOperationType(LoginTypeEnum.TYPE_LOGIN.getCode());
+                            loginTrailDAO.saveLoginTrail(loginTrail);
+                            //开始生成token
+                            String jsonToken = createToken(passportDTO.getId(), null, passportDTO.getPhone(), tokenExpiresMs);
+                            if(StringUtils.isEmpty(jsonToken)){
+                                log.warn("登录失败：jsonToken:{}",jsonToken);
+                                result = Result.newResult(ResultEnum.FAIL,"");
+                            }else{
+                                JSONObject jsonObject = JSONObject.parseObject(jsonToken);
+                                passportDTO.setToken(jsonObject.getString("token"));
+                                result.setData(passportDTO);
+                            }
                         }else{
-                            JSONObject jsonObject = JSONObject.parseObject(jsonToken);
-                            passportDTO.setToken(jsonObject.getString("token"));
-                            result.setData(passportDTO);
+                            result = Result.newResult(ResultEnum.LONGIN_PWD_ERROR,"用户名或密码错误");
+                            log.warn("用户密码错误:passportDTO:{}", JSONObject.toJSONString(passportDTO));
                         }
-                    }else{
-                        result = Result.newResult(ResultEnum.LONGIN_PWD_ERROR,"用户名或密码错误");
-                        log.warn("用户密码错误:passportDTO:{}", JSONObject.toJSONString(passportDTO));
                     }
                 }
             }

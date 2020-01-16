@@ -4,7 +4,7 @@ server:
     context-path: /video
 spring:
   redis:
-    host: 123.57.26.191
+    host: 10.172.227.116
     password: j8s4fcxdlU
     port: 6379
     pool:
