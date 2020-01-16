@@ -30,7 +30,7 @@ import javax.servlet.http.HttpServletRequest;
 @RestController
 @RequestMapping(value="/login")
 @Slf4j
-@Api(value = "LoginController", tags = "注册登录控制类")
+@Api(value = "LoginController", tags = "基础注册登录控制类")
 public class LoginController {
     @Autowired
     private HttpServletRequest request;
@@ -75,7 +75,7 @@ public class LoginController {
         return result;
     }
 
-    @ApiOperation(value="账号+密码登录（如果未注册则注册并登录）",response = Result.class)
+    @ApiOperation(value="账号+密码登录",response = Result.class)
     @RequestMapping(value="/pwd/login", method=RequestMethod.POST)
     public Result<JSONObject> login(@RequestBody PassportPwdLoginDTO passportPwdLoginDTO) {
         log.info("账号+密码登录开始：passportPwdLoginDTO:{}",JSONObject.toJSONString(passportPwdLoginDTO));
@@ -97,7 +97,7 @@ public class LoginController {
                 log.debug("图片验证码校验成功:clcPassportPwdLoginPDTO:{}", JSONObject.toJSONString(passportPwdLoginDTO));
                 PassportOperationTypeEnum passportOperationTypeEnum = ApiUloginUtil.chackPassportType(passportPwdLoginDTO.getAccount());
                 Result<PassportDTO> loginResult = loginService.login(passportOperationTypeEnum,passportPwdLoginDTO.getAccount(),passportPwdLoginDTO.getPwdAes(),ApiUloginUtil.TOKEN_OVERTIME_MS);
-                log.info("注册登录结果 loginResult={}", JSON.toJSONString(loginResult));
+                log.info("登录结果 loginResult={}", JSON.toJSONString(loginResult));
                 if(loginResult.isSuccess()){
                     JSONObject joData = new JSONObject();
                     joData.put("token",loginResult.getData().getToken());

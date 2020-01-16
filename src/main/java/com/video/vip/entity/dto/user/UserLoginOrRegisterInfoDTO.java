@@ -11,7 +11,7 @@ import java.io.Serializable;
  */
 @Data
 @ApiModel(description = "新增用户信息实体")
-public class SaveUserInfoDTO implements Serializable {
+public class UserLoginOrRegisterInfoDTO implements Serializable {
     private static final long serialVersionUID = 3725916604425611976L;
 
     @ApiModelProperty(value = "用户姓名")
@@ -28,4 +28,10 @@ public class SaveUserInfoDTO implements Serializable {
 
     @ApiModelProperty(value = "用户所属平台。枚举 UserPlatformEnum 0:C端普通用户 1:B端运营人员")
     private Integer userPlatform;
+
+    @ApiModelProperty(value = "账号（邮箱或手机号）")
+    private String account;
+
+    @ApiModelProperty(value = "aes加密密码")
+    private String pwdAes;
 }

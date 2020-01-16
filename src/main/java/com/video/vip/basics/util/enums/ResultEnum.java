@@ -16,6 +16,7 @@ public enum ResultEnum {
     REGISTER_PHONE_ESISTS_YES("注册手机号已经存在",-102),
     REGISTER_PP_ESISTS_YES("注册帐号已经存在",-103),
     REGISTER_ERROR("注册失败",-104),
+    REGISTER_NO("未注册失败",-105),
 
 
     //成功类枚举，区间1-1000

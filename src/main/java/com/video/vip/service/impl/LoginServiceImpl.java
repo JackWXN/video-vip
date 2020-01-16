@@ -142,11 +142,11 @@ public class LoginServiceImpl implements LoginService {
         try {
             Result<Passport> passportResult = getPassportByAccount(passportOperationTypeEnum,account);
             if(!passportResult.isSuccess()){
-                result = Result.newResult(ResultEnum.LONGIN_PWD_ERROR,"未注册");
+                result = Result.newResult(ResultEnum.REGISTER_NO,"未注册");
             }else {
                 Passport passport = passportResult.getData();
                 if(null==passport){
-                    result = Result.newResult(ResultEnum.LONGIN_PWD_ERROR,"未注册");
+                    result = Result.newResult(ResultEnum.REGISTER_NO,"未注册");
                 } else if (passport.getStatus()==UserStatusEnum.DISABLE.getCode()) {
                     result = Result.newResult(ResultEnum.LOGIN_DISABLE,"账号被禁用");
                 } else if (passport.getStatus()==UserStatusEnum.HANDING.getCode()) {

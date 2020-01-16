@@ -1,21 +1,24 @@
 package com.video.vip.controller.b;
 
 import com.alibaba.fastjson.JSON;
-import com.video.vip.basics.constant.CommonConstant;
 import com.video.vip.basics.dto.Result;
-import com.video.vip.basics.dto.UserTokenDTO;
 import com.video.vip.basics.util.enums.ResultEnum;
 import com.video.vip.entity.common.QueryPageRequest;
 import com.video.vip.entity.common.QueryPageResult;
+import com.video.vip.entity.dto.passport.PassportDTO;
 import com.video.vip.entity.dto.user.QueryUserInfoDTO;
-import com.video.vip.entity.dto.user.SaveUserInfoDTO;
+import com.video.vip.entity.dto.user.UserLoginOrRegisterInfoDTO;
 import com.video.vip.entity.vo.UserInfoVO;
+import com.video.vip.service.LoginService;
 import com.video.vip.service.UserCenterService;
 import com.video.vip.util.enums.UserPlatformEnum;
+import com.video.vip.util.enums.passport.PassportOperationTypeEnum;
+import com.video.vip.util.login.ApiUloginUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -36,18 +39,34 @@ public class BUserCenterController {
     @Autowired
     private UserCenterService userCenterService;
 
-    @ApiOperation(value="新增用户信息")
+    @Autowired
+    private LoginService loginService;
+
+    @ApiOperation(value="注册登录（没有注册时先注册）")
     @RequestMapping(value="/saveUserInfo", method= RequestMethod.POST)
-    public Result saveUserInfo(@RequestBody SaveUserInfoDTO saveUserInfoDTO) {
-        String logStr = "新增用户信息";
-        log.info("{}，开始。入参：saveUserInfoDTO={}", logStr, JSON.toJSONString(saveUserInfoDTO));
+    public Result saveUserInfo(@RequestBody UserLoginOrRegisterInfoDTO userLoginOrRegisterInfoDTO) {
+        String logStr = "注册登录（没有注册时先注册）";
+        log.info("{}，开始。入参：userLoginOrRegisterInfoDTO={}", logStr, JSON.toJSONString(userLoginOrRegisterInfoDTO));
         Result result;
-        if(null==saveUserInfoDTO || null==saveUserInfoDTO.getSource()
-                || null==saveUserInfoDTO.getUserPlatform() || null== UserPlatformEnum.codeOf(saveUserInfoDTO.getUserPlatform())){
-            result = Result.newResult(ResultEnum.PARAM_FORMAT_ERROR, ResultEnum.PARAM_FORMAT_ERROR.getMsg());
+        if(null== userLoginOrRegisterInfoDTO || null== userLoginOrRegisterInfoDTO.getSource()
+                || null== userLoginOrRegisterInfoDTO.getUserPlatform()
+                || null== UserPlatformEnum.codeOf(userLoginOrRegisterInfoDTO.getUserPlatform())
+                ||StringUtils.isEmpty(userLoginOrRegisterInfoDTO.getAccount())
+                ||StringUtils.isEmpty(userLoginOrRegisterInfoDTO.getPwdAes())){
+            result = Result.newResult(ResultEnum.PARAM_FORMAT_ERROR,ResultEnum.PARAM_FORMAT_ERROR.getMsg());
         }else {
-            UserTokenDTO userTokenDTO = (UserTokenDTO) request.getAttribute(CommonConstant.USER_TOKEN_KEY);
-            result = userCenterService.saveUserInfo(logStr, userTokenDTO.getPid(), saveUserInfoDTO);
+            PassportOperationTypeEnum passportOperationTypeEnum = ApiUloginUtil.chackPassportType(userLoginOrRegisterInfoDTO.getAccount());
+            result = loginService.login(passportOperationTypeEnum,userLoginOrRegisterInfoDTO.getAccount(),userLoginOrRegisterInfoDTO.getPwdAes(),ApiUloginUtil.TOKEN_OVERTIME_MS);
+            if(!result.isSuccess()&&ResultEnum.REGISTER_NO.getCode().equals(result.getCode())){
+                result = loginService.register(passportOperationTypeEnum,userLoginOrRegisterInfoDTO.getAccount(),userLoginOrRegisterInfoDTO.getPwdAes(),ApiUloginUtil.TOKEN_OVERTIME_MS);
+                if(result.isSuccess()){
+                    result = loginService.login(passportOperationTypeEnum,userLoginOrRegisterInfoDTO.getAccount(),userLoginOrRegisterInfoDTO.getPwdAes(),ApiUloginUtil.TOKEN_OVERTIME_MS);
+                }
+            }
+            if(result.isSuccess()){
+                PassportDTO  passportDTO = (PassportDTO) result.getData();
+                result = userCenterService.saveUserInfo(logStr, passportDTO.getId(), userLoginOrRegisterInfoDTO);
+            }
         }
         log.info("{}，结束。出参：result={}", logStr, JSON.toJSONString(result));
         return result;

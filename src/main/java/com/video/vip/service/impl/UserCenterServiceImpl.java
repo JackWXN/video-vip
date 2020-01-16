@@ -10,7 +10,7 @@ import com.video.vip.entity.bo.UserAllInfoBO;
 import com.video.vip.entity.common.QueryPageRequest;
 import com.video.vip.entity.common.QueryPageResult;
 import com.video.vip.entity.dto.user.QueryUserInfoDTO;
-import com.video.vip.entity.dto.user.SaveUserInfoDTO;
+import com.video.vip.entity.dto.user.UserLoginOrRegisterInfoDTO;
 import com.video.vip.entity.po.Passport;
 import com.video.vip.entity.po.UserInfo;
 import com.video.vip.entity.vo.UserInfoVO;
@@ -41,7 +41,7 @@ public class UserCenterServiceImpl implements UserCenterService {
     private PassportDAO passportDAO;
 
     @Override
-    public Result saveUserInfo(String logStr, Long pid, SaveUserInfoDTO saveUserInfoDTO){
+    public Result saveUserInfo(String logStr, Long pid, UserLoginOrRegisterInfoDTO userLoginOrRegisterInfoDTO){
         final String key = "saveUserInfo_" + pid;
         if (LockService.addTimeLock(key, 60)) {
             try{
@@ -51,10 +51,10 @@ public class UserCenterServiceImpl implements UserCenterService {
                 }
                 userInfo = new UserInfo();
                 userInfo.setPid(pid);
-                userInfo.setSource(saveUserInfoDTO.getSource());
-                userInfo.setReferrerPid(saveUserInfoDTO.getReferrerPid());
+                userInfo.setSource(userLoginOrRegisterInfoDTO.getSource());
+                userInfo.setReferrerPid(userLoginOrRegisterInfoDTO.getReferrerPid());
                 userInfo.setVipStatus(VipStatusEnum.VIP_STATUS1.getCode());
-                userInfo.setUserPlatform(saveUserInfoDTO.getUserPlatform());
+                userInfo.setUserPlatform(userLoginOrRegisterInfoDTO.getUserPlatform());
                 userInfo.setId(IdWork.getId());
                 userInfo.setCreateDate(new Date());
                 userInfo.setUpdateDate(new Date());

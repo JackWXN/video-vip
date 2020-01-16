@@ -4,7 +4,7 @@ import com.video.vip.basics.dto.Result;
 import com.video.vip.entity.common.QueryPageRequest;
 import com.video.vip.entity.common.QueryPageResult;
 import com.video.vip.entity.dto.user.QueryUserInfoDTO;
-import com.video.vip.entity.dto.user.SaveUserInfoDTO;
+import com.video.vip.entity.dto.user.UserLoginOrRegisterInfoDTO;
 import com.video.vip.entity.vo.UserInfoVO;
 
 /**
@@ -17,11 +17,11 @@ public interface UserCenterService {
      *
      * @param : logStr
      * @param : pid
-     * @param : saveUserInfoDTO
+     * @param : userLoginOrRegisterInfoDTO
      * @author : wxn
      * @date : 2020/1/14 17:23
      */
-    Result saveUserInfo(String logStr, Long pid, SaveUserInfoDTO saveUserInfoDTO);
+    Result saveUserInfo(String logStr, Long pid, UserLoginOrRegisterInfoDTO userLoginOrRegisterInfoDTO);
 
     /**
      * 查询用户信息列表
